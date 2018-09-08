@@ -1,6 +1,8 @@
 # Ransomeware
 Ransomware created for CECS 378 at CSULB
 
+Located at: www.onestyle.tech
+
 ### Using Windows Subsystem for Linux
 
 * If you don't have bash install from here: https://docs.microsoft.com/en-us/windows/wsl/install-win10
