@@ -15,7 +15,7 @@ _For Ransomware server:_
 ```
 $ chown :root cecs378.pem
 $ chmod 600 cecs378.pem
-$ ssh -i .pem ubuntu@ec2-18-221-179-247.us-east-2.compute.amazonaws.com
+$ ssh -i cecs378.pem ubuntu@ec2-18-221-179-247.us-east-2.compute.amazonaws.com
 ```
 
 ## Git Instructions: mini cheatsheet of the most important git code
