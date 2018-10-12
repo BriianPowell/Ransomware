@@ -7,7 +7,7 @@ Located at: www.onestyle.tech
 
 * If you don't have bash install from here: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 * Download and install Ubuntu for Windows 10.
-* Make sure you have the file looforyou.pem in current directory.
+* Make sure you have the .pem file in current directory.
 * From bash, type in commands
 
 _For Ransomware server:_
@@ -15,7 +15,7 @@ _For Ransomware server:_
 ```
 $ chown :root cecs378.pem
 $ chmod 600 cecs378.pem
-$ ssh -i cecs378.pem ubuntu@ec2-18-221-179-247.us-east-2.compute.amazonaws.com
+$ ssh -i cecs378.pem ubuntu@ec2-18-224-216-174.us-east-2.compute.amazonaws.com
 ```
 
 ## Git Instructions: mini cheatsheet of the most important git code
