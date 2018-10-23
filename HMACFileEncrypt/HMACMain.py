@@ -1,7 +1,7 @@
 import os
 import var
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives import padding, hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/
 # https://cryptography.io/en/latest/hazmat/primitives/padding/
@@ -10,17 +10,18 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # CECS 456 - Machine Learning
 # Aliasgari
 
-class Encryption:
-    def __init__(self, key):
-        self.key = key
+class HMACEncryption:
+    def __init__(self, ENCKEY, HMACKEY):
+        self.ENCKEY = ENCKEY
+        self.HMACKEY = HMACKEY
 
-    # (C, IV) = AESEncrypt(message, key):
+    # (C, IV, tag)= MyencryptMAC(message, EncKey, HMACKey)
     # In this method, you will generate a 16 Bytes IV, and encrypt the message using the key and IV in CBC mode (AES).  
     # You return an error if the len(key) < 32 (i.e., the key has to be 32 bytes= 256 bits).
-    def AESEncrypt(self, message, KEY):
-        if(len(KEY) < var.KEYSIZE):
+    def encryptHMAC(self, message, ENCKEY, HMACKEY):
+        if(len(ENCKEY) < var.KEYSIZE):
             print("Key is less than 32 bytes.")
-            return
+            return -1
 
         # Checks to see if cipher and mode are supported
         backend = default_backend()
@@ -30,7 +31,7 @@ class Encryption:
 
         # Creates a Cipher that combines the AES algorithm and CBC mode
         # 256 bit key = 14 rounds of AES
-        cipher = Cipher(algorithms.AES(KEY), modes.CBC(iv), backend=backend)
+        cipher = Cipher(algorithms.AES(ENCKEY), modes.CBC(iv), backend=backend)
 
         # Padder required to pad the CipherText
         # Makes sure Data is correct size for encryption
@@ -42,17 +43,33 @@ class Encryption:
         encryptor = cipher.encryptor()
         cipher_text = encryptor.update(pd) + encryptor.finalize()
 
-        return cipher_text, iv
+        # Create HMAC tag based off the SHA256 algorithm and key 
+        # Update cipher_text with hash
+        h_tag = hmac.HMAC(HMACKEY, hashes.SHA256(), backend=default_backend())
+        h_tag.update(cipher_text)
+
+        return cipher_text, iv, h_tag.finalize()
 
     # (P) = AESDecrypt(cipher, key, IV):
     # runs the symmetric opposite of AESEncrypt and returns plain_text
-    def AESDecrypt(self, CT, KEY, IV):
+    def decryptHMAC(self, CT, ENCKEY, IV, HMACKEY, HTAG):
         # Checks to see if cipher and mode are supported
         backend = default_backend()
-   
+        
+        # Create HMAC tag based off the SHA256 algorithm and key 
+        # Update cipher_text with hash
+        h_tag = hmac.HMAC(HMACKEY, hashes.SHA256(), backend=backend)
+        h_tag.update(CT)
+
+        #Check if correct signature
+        try:
+            h_tag.verify(HTAG)
+        except:
+            print("Signature does not match digest.")
+
         # Creates a Cipher that combines the AES algorithm and CBC mode
         # 256 bit key = 14 rounds of AES
-        cipher = Cipher(algorithms.AES(KEY), modes.CBC(IV), backend=backend)
+        cipher = Cipher(algorithms.AES(ENCKEY), modes.CBC(IV), backend=backend)
 
         # Creates decryptor object to send cipher data to
         # Cipher data is encrypted padded data
@@ -66,15 +83,17 @@ class Encryption:
     
         return plain_text
 
-    # (C, IV, key, ext) = AESFileEncrypt (filepath):
+    # (C, IV, tag, Enckey, HMACKey, ext)= MyfileEncryptMAC (filepath)
     # In this method, you'll generate a 32Byte key.
     # You open and read the file as a string. 
     # You then call the above method to encrypt your file using the key you generated. 
     # You return the cipher C, IV, key and the extension of the file (as a string).
-    def AESFileEncrypt(self, filepath):
+    def fileEncryptHMAC(self, filepath):
         # Generate Key of Size 32
-        # Use the class's key to encrypt/decrypt
-        # key = os.urandom(var.KEYSIZE)
+        # enckey = os.urandom(var.KEYSIZE)
+        # hmackey = os.urandom(var.HMACSIZE)
+        # IMPORTANT: Use the classes initialized keys for encryption/decryption and HMAC
+
 
         # Get file name and extension
         filename, ext = os.path.splitext(filepath)
@@ -88,7 +107,7 @@ class Encryption:
         file.close()
 
         # Encrypt the file and get the IV and cipher_text back
-        cipher_text, iv = self.AESEncrypt(bytedata, self.key)
+        cipher_text, iv, htag = self.encryptHMAC(bytedata, self.ENCKEY, self.HMACKEY)
 
         # write encrypted file data to the newly created file path
         # write is done in write-binary mode
@@ -96,9 +115,9 @@ class Encryption:
         encryptFile.write(cipher_text)
         encryptFile.close()
     
-        return cipher_text, iv, self.key, ext
+        return cipher_text, iv, htag, self.ENCKEY, self.HMACKEY, ext
 
-    def AESFileDecrypt(self, cfilepath, KEY, IV, EXT):
+    def fileDecryptHMAC(self, cfilepath, ENCKEY, HMACKEY, IV, EXT, TAG):
         # Open file in read-binary mode
         # Read binary data to bytedata
         file = open(cfilepath, "rb")
@@ -106,30 +125,36 @@ class Encryption:
         file.close()
 
         # Get plain_text back from Decryption function
-        plain_text = self.AESDecrypt(bytedata, KEY, IV)
-
-        filepath = cfilepath.split(var.ENCEXT)[0] + EXT
+        plain_text = self.decryptHMAC(bytedata, ENCKEY, IV, HMACKEY, TAG)
+        
+        filepath = cfilepath.split(var.ENCEXT)[0] + "new" + EXT
         # Touch a file called decypted.txt in write-binary mode
         # Write plain_text to the new file
         decrypt = open(filepath, "wb")
         decrypt.write(plain_text)
         decrypt.close()
 
-# [TEST]
-# Generating a key
+# # [TEST]
+# # Generating a key
 # key = os.urandom(var.KEYSIZE)
+# hmackey = os.urandom(var.HMACSIZE)
 
 # # Testing File Encryption
 # enc = Encryption(key)
 # ct, iv, key, ext = enc.AESFileEncrypt("FileEncryption\\test_file.txt")
 # enc.AESFileDecrypt("FileEncryption\\test_file.encrypt", key, iv, ext)
 
-# Test Message
+# # Test Message
+# enc = HMACEncryption(key, hmackey)
 # message = b"hello brochachos"
-# ct, iv = AESEncrypt(message, key)
+# ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
+
+# # Test File Encryption
+# ct, iv, ht, ekey, hkey, ext = enc.fileEncryptHMAC("HMACFileEncrypt\\image.jpg")
+# enc.fileDecryptHMAC("HMACFileEncrypt\\image.encrypt", ekey, hkey, iv, ext, ht)
 
 # # Print Results
 # print("Original Message: ", message)
 # print("Cipher text: ", ct)
-# print("Decrypted Message: ", AESDecrypt(ct, key, iv))
+# print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, iv, enc.HMACKEY, ht))
 
