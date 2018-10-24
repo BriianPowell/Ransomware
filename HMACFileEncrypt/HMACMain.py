@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives import padding, hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/
 # https://cryptography.io/en/latest/hazmat/primitives/padding/
+# https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/
 
 # Brian Powell @BriianPowell
 # CECS 456 - Machine Learning
@@ -43,25 +44,25 @@ class HMACEncryption:
         encryptor = cipher.encryptor()
         cipher_text = encryptor.update(pd) + encryptor.finalize()
 
-        # Create HMAC tag based off the SHA256 algorithm and key 
-        # Update cipher_text with hash
+        # Create HMAC tag object based off the SHA256 algorithm and key 
+        # Update cipher_text with hashed HMAC tag    
         h_tag = hmac.HMAC(HMACKEY, hashes.SHA256(), backend=backend)
         h_tag.update(cipher_text)
 
         return cipher_text, iv, h_tag.finalize()
 
-    # (P) = AESDecrypt(cipher, key, hkey, tag, iv):
-    # runs the symmetric opposite of AESEncrypt and returns plain_text
+    # (P) = AESDecrypt(cipher, key, hkey, iv, htag):
+    # runs the symmetric opposite of encryptHMAC and returns plain_text
     def decryptHMAC(self, CT, ENCKEY, HMACKEY, IV, TAG):
         # Checks to see if cipher and mode are supported
         backend = default_backend()
         
-        # Create HMAC tag based off the SHA256 algorithm and key 
+        # Create HMAC tag object based off the SHA256 algorithm and Hkey 
         # Update cipher_text with hash
         h_tag = hmac.HMAC(HMACKEY, hashes.SHA256(), backend=backend)
         h_tag.update(CT)
 
-        #Check if correct signature
+        # Check if correct signature
         try:
             h_tag.verify(TAG)
         except:
@@ -83,17 +84,12 @@ class HMACEncryption:
     
         return plain_text
 
-    # (C, IV, tag, Enckey, HMACKey, ext)= MyfileEncryptMAC (filepath)
-    # In this method, you'll generate a 32Byte key.
-    # You open and read the file as a string. 
-    # You then call the above method to encrypt your file using the key you generated. 
-    # You return the cipher C, IV, key and the extension of the file (as a string).
+    # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
     def fileEncryptHMAC(self, filepath):
-        # Generate Key of Size 32
+        # Generate Keys of Size 32
         # enckey = os.urandom(var.KEYSIZE)
         # hmackey = os.urandom(var.HMACSIZE)
         # IMPORTANT: Use the classes initialized keys for encryption/decryption and HMAC
-
 
         # Get file name and extension
         filename, ext = os.path.splitext(filepath)
@@ -137,18 +133,18 @@ class HMACEncryption:
 # [TEST]
 # Generating a key
 key = os.urandom(var.KEYSIZE)
-hmackey = os.urandom(var.HMACSIZE)
+hkey = os.urandom(var.HMACSIZE)
 
-# Test Message
-enc = HMACEncryption(key, hmackey)
-# message = b"hello brochachos"
-# ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
+# Test Message Encryption
+enc = HMACEncryption(key, hkey)
+message = b"hello brochachos"
+ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
+
+print("Original Message: ", message)
+print("Cipher text: ", ct)
+print("Tag: ", ht)
+print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, enc.HMACKEY, iv, ht))
 
 # Test File Encryption
-ct, ek, hk, iv, ht, ext = enc.fileEncryptHMAC("HMACFileEncrypt\\image.jpg")
-enc.fileDecryptHMAC("HMACFileEncrypt\\image.encrypt", ek, hk, iv, ht, ext)
-
-# # Print Results
-# print("Original Message: ", message)
-# print("Cipher text: ", ct)
-# print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, iv, enc.HMACKEY, ht))
+ct, ek, hk, i_v, htag, ext = enc.fileEncryptHMAC("HMACFileEncrypt\\image.jpg")
+enc.fileDecryptHMAC("HMACFileEncrypt\\image.encrypt", ek, hk, i_v, htag, ext)

@@ -1,3 +1,4 @@
 *.pem
-__pycache__/
 *.pyc
+__pycache__/
+.vscode
