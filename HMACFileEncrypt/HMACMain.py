@@ -45,14 +45,14 @@ class HMACEncryption:
 
         # Create HMAC tag based off the SHA256 algorithm and key 
         # Update cipher_text with hash
-        h_tag = hmac.HMAC(HMACKEY, hashes.SHA256(), backend=default_backend())
+        h_tag = hmac.HMAC(HMACKEY, hashes.SHA256(), backend=backend)
         h_tag.update(cipher_text)
 
         return cipher_text, iv, h_tag.finalize()
 
-    # (P) = AESDecrypt(cipher, key, IV):
+    # (P) = AESDecrypt(cipher, key, hkey, tag, iv):
     # runs the symmetric opposite of AESEncrypt and returns plain_text
-    def decryptHMAC(self, CT, ENCKEY, IV, HMACKEY, HTAG):
+    def decryptHMAC(self, CT, ENCKEY, HMACKEY, IV, TAG):
         # Checks to see if cipher and mode are supported
         backend = default_backend()
         
@@ -63,7 +63,7 @@ class HMACEncryption:
 
         #Check if correct signature
         try:
-            h_tag.verify(HTAG)
+            h_tag.verify(TAG)
         except:
             print("Signature does not match digest.")
 
@@ -115,9 +115,9 @@ class HMACEncryption:
         encryptFile.write(cipher_text)
         encryptFile.close()
     
-        return cipher_text, iv, htag, self.ENCKEY, self.HMACKEY, ext
+        return cipher_text, self.ENCKEY, self.HMACKEY, iv, htag, ext
 
-    def fileDecryptHMAC(self, cfilepath, ENCKEY, HMACKEY, IV, EXT, TAG):
+    def fileDecryptHMAC(self, cfilepath, ENCKEY, HMACKEY, IV, TAG, EXT):
         # Open file in read-binary mode
         # Read binary data to bytedata
         file = open(cfilepath, "rb")
@@ -125,7 +125,7 @@ class HMACEncryption:
         file.close()
 
         # Get plain_text back from Decryption function
-        plain_text = self.decryptHMAC(bytedata, ENCKEY, IV, HMACKEY, TAG)
+        plain_text = self.decryptHMAC(bytedata, ENCKEY, HMACKEY, IV, TAG)
         
         filepath = cfilepath.split(var.ENCEXT)[0] + "new" + EXT
         # Touch a file called decypted.txt in write-binary mode
@@ -134,27 +134,21 @@ class HMACEncryption:
         decrypt.write(plain_text)
         decrypt.close()
 
-# # [TEST]
-# # Generating a key
-# key = os.urandom(var.KEYSIZE)
-# hmackey = os.urandom(var.HMACSIZE)
+# [TEST]
+# Generating a key
+key = os.urandom(var.KEYSIZE)
+hmackey = os.urandom(var.HMACSIZE)
 
-# # Testing File Encryption
-# enc = Encryption(key)
-# ct, iv, key, ext = enc.AESFileEncrypt("FileEncryption\\test_file.txt")
-# enc.AESFileDecrypt("FileEncryption\\test_file.encrypt", key, iv, ext)
-
-# # Test Message
-# enc = HMACEncryption(key, hmackey)
+# Test Message
+enc = HMACEncryption(key, hmackey)
 # message = b"hello brochachos"
 # ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
 
-# # Test File Encryption
-# ct, iv, ht, ekey, hkey, ext = enc.fileEncryptHMAC("HMACFileEncrypt\\image.jpg")
-# enc.fileDecryptHMAC("HMACFileEncrypt\\image.encrypt", ekey, hkey, iv, ext, ht)
+# Test File Encryption
+ct, ek, hk, iv, ht, ext = enc.fileEncryptHMAC("HMACFileEncrypt\\image.jpg")
+enc.fileDecryptHMAC("HMACFileEncrypt\\image.encrypt", ek, hk, iv, ht, ext)
 
 # # Print Results
 # print("Original Message: ", message)
 # print("Cipher text: ", ct)
 # print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, iv, enc.HMACKEY, ht))
-
