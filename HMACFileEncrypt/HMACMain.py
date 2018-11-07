@@ -8,13 +8,13 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/
 
 # Brian Powell @BriianPowell
-# CECS 456 - Machine Learning
+# CECS 378 - Cyber Security
 # Aliasgari
 
 class HMACEncryption:
-    def __init__(self, ENCKEY, HMACKEY):
-        self.ENCKEY = ENCKEY
-        self.HMACKEY = HMACKEY
+    def __init__(self):
+        self.ENCKEY = os.urandom(var.KEYSIZE)
+        self.HMACKEY = os.urandom(var.KEYSIZE)
 
     # (C, IV, tag)= MyencryptMAC(message, EncKey, HMACKey)
     # In this method, you will generate a 16 Bytes IV, and encrypt the message using the key and IV in CBC mode (AES).  
@@ -131,16 +131,14 @@ class HMACEncryption:
         decrypt.close()
 
 # [TEST]
-# Generating a key
-key = os.urandom(var.KEYSIZE)
-hkey = os.urandom(var.HMACSIZE)
-
 # Test Message Encryption
-enc = HMACEncryption(key, hkey)
+enc = HMACEncryption()
 message = b"hello brochachos"
 ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
 
 print("Original Message: ", message)
+print("Enc_Key: ", enc.ENCKEY)
+print("Hmc_Key: ", enc.HMACKEY)
 print("Cipher text: ", ct)
 print("Tag: ", ht)
 print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, enc.HMACKEY, iv, ht))

@@ -18,59 +18,57 @@ $ chmod 600 cecs378.pem
 $ ssh -i cecs378.pem ubuntu@ec2-18-224-216-174.us-east-2.compute.amazonaws.com
 ```
 
-## Git Instructions: mini cheatsheet of the most important git code
-----
-#### Terms
-* **master branch** - branch with latest working code (main program)
-* **remote branch** - your own branch
-* **upstream branch** - branch that can be tracked
-* **origin** - perform operation on the source of your target
+## Mini-Cheatsheet for Git Instructions:
+#### Helpful Definitions:
+* **Master Branch**: branch with latest working code (main program)
+* **Remote Branch**: your current local branch
+* **Upstream Branch**: branch that can be tracked by GitHub
+* **Origin**: perform operation on the source of your target
 
-
-### going to a branch:
-* this is your private workspace
-```
-git checkout {branchname}
-```
-
-### going to a *new* branch
-* making a new branch with all the work you have
+### Changing to a *New* Branch:
+*making a new branch with all your current work*
 ```
 git checkout -b {newbranchname}
 ```
 
-### when pushing to your branch for the first time
-* must set upstream so that github can track it 
+### Changing to a Branch:
+*this is your private workspace*
 ```
-git push -u origin {branchname}    //you only need the -u argument in your very first push. 
+git checkout {branchname}
 ```
 
-### pushing to a branch
-* whenever you push, you should ALWAYS **ADD**, **COMMIT**, then **PULL** first
+### Pushing to a Branch:
+*whenever you push, you should ALWAYS **ADD**, **COMMIT**, then **PULL** first*
 ```
-git add .                    //period means "everything". you can also choose to add only specific files
-git commit -m "message"      //**REQUIRED** you need to type in a message for every commit
-git pull origin master       //this pulls code FROM master TO whatever branch you're on (if you are already on master branch, keyword origin is optional)
-//ALWAYS pull before you push (make sure to add and commit first) to avoid overriding data
-git push                     //push to your branch
+git add .                    // period means "everything", you can optionally chose to add only specific files
+git commit -m "message"      // **REQUIRED** every commit requires a message
+git pull origin master       // pulls code FROM master TO whichever branch you're on (if you are already on master branch, keyword origin is optional)
+        // **ALWAYS** pull before you push (make sure to add and commit first; to avoid overriding data)
+git push                     // push to your upstream branch
 ```
-* order of operations:   	 add -> commit -> pull -> push
+**Order of Operations:   	 Add -> Commit -> Pull -> Push**
 
-### see status of files modified
+### Pushing to Your Branch for the First Time:
+*must set upstream so that github can track it* 
+```
+git push -u origin {branchname}    // -u argument is only necessary in your first push on a new branch
+```
+
+### View Status of Modified Files:
 ```
 git status
 ```
 
-### see specific changes within files:
+### View Specific Changes Within Files:
 ```
 git diff                   // overview of things changed
 git diff {filename}        // see specific changes in file 
-git diff {branchname}      // view differences in different branches
+git diff {branchname}      // view differences between branches
 :wq                        // exits vim mode
 
 ```
 
-### see list of commits
+### View List of Commits:
 ```
 git log      // view commit log
 git checkout {first 6 characters of chosen checkpoint hash} -b {new branch name}  // checkout log to new branch
