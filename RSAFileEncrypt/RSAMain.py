@@ -1,7 +1,7 @@
 import os
 import var
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding, hashes, hmac
+from cryptography.hazmat.primitives import padding, hashes, hmac, serialization
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/
 # https://cryptography.io/en/latest/hazmat/primitives/padding/
@@ -63,23 +63,23 @@ class RSAEncryption:
     # Lastly, you encrypt the key variable ("key"= EncKey+ HMACKey (concatenated)) using the RSA publickey in OAEP 
     # padding mode. The result will be RSACipher. 
     # You then return (RSACipher, C, IV, ext).
-    def encryptRSA(self, filepath, RSA_Publickey_filepath):
-        # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
-        ct, ek, hk, iv, htag, ext = self.fileEncryptHMAC(filepath)
+    # def encryptRSA(self, filepath, RSA_Publickey_filepath):
+    #     # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
+    #     ct, ek, hk, iv, htag, ext = self.fileEncryptHMAC(filepath)
 
 
 
         
-        return RSACipher, ct, iv, htag, ext
+    #     return RSACipher, ct, iv, htag, ext
 
-    # (P) = decryptRSA(RSACipher, C, IV, tag, ext, RSA_Privatekey_filepath) 
-    # which does the exactly inverse of the above and generate the decrypted file using your 
-    # previous decryption methods.
-    def decryptRSA(self, CT, ENCKEY, HMACKEY, IV, TAG):
+    # # (P) = decryptRSA(RSACipher, C, IV, tag, ext, RSA_Privatekey_filepath) 
+    # # which does the exactly inverse of the above and generate the decrypted file using your 
+    # # previous decryption methods.
+    # def decryptRSA(self, CT, ENCKEY, HMACKEY, IV, TAG):
         
 
 
-        return 
+    #     return 
 
     # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
     def fileEncryptHMAC(self, filepath):
@@ -195,3 +195,8 @@ class RSAEncryption:
         plain_text = unpadder.update(pt) + unpadder.finalize()
     
         return plain_text
+
+# [TEST]
+# Test RSA Files
+enc = HMACEncryption()
+pk, pb = enc.
