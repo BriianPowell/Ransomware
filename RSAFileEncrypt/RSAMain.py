@@ -21,6 +21,40 @@ class RSAEncryption:
     # Next, you will a script that looks for a pair of RSA Public and private key (using a CONSTANT file path; PEM format). 
     # If the files do not exist (use OS package) then generate the RSA public and private key (2048 bits length) 
     # using the same constant file path.
+    def findRSAkey(self, filepath):
+        if os.path.isfile(filepath):
+            with open(filepath, "rb") as key_file:
+                private_key = serialization.load_pem_private_key(
+                    key_file.read(),
+                    password=None,
+                    backend=default_backend()
+                )
+                public_key = private_key.public_key()
+        else:
+            keysFile = open(filepath, "w+")
+
+            private_key = rsa.generate_private_key(
+                public_exponent=65537,
+                key_size=2048,
+                backend=default_backend()
+            )
+            pem = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+            pem.splitlines()[0]
+            keysFile.write(pem.decode("utf-8"))
+            
+            public_key = private_key.public_key()
+            pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+            pem.splitlines()[0]
+            keysFile.write(pem.decode("utf-8"))
+            
+        return private_key, public_key
     
 
     # (RSACipher, C, IV, tag, ext)= MyencryptRSA(filepath, RSA_Publickey_filepath)
