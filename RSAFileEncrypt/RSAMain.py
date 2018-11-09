@@ -1,5 +1,4 @@
-import os
-import var
+import os, var
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes, hmac, serialization
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -38,8 +37,8 @@ class RSAEncryption:
         # If PEM file doesn't exist we must create keys and store them 
         else:
             private_key = rsa.generate_private_key(
-                public_exponent=65537,
-                key_size=2048,
+                public_exponent=var.PESIZE,
+                key_size=var.RSAKEYSIZE,
                 backend=default_backend()
             )
             pem = private_key.private_bytes(
@@ -219,18 +218,3 @@ class RSAEncryption:
         plain_text = unpadder.update(pt) + unpadder.finalize()
     
         return plain_text
-
-# [TEST]
-# Test RSA Files
-publ_path = "RSAFileEncrypt\public.pem" 
-priv_path = "RSAFileEncrypt\private.pem"
-fp = "RSAFileEncrypt\image.jpg"
-cfp = "RSAFileEncrypt\image.encrypt"
-
-enc = RSAEncryption()
-privk,pubk = enc.findRSAKey("RSAFileEncrypt")
-print("Public key:", str(pubk))
-print("Private Key:", str(privk))
-
-rsc, ct, i_v, htag, ext = enc.encryptRSA(fp, publ_path)
-enc.decryptRSA(cfp, priv_path, rsc, ct, i_v, htag, ext)
