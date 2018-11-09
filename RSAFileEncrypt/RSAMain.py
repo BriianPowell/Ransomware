@@ -18,7 +18,7 @@ class RSAEncryption:
         self.ENCKEY = os.urandom(var.KEYSIZE)
         self.HMACKEY = os.urandom(var.KEYSIZE)
 
-    #Step 1:
+    # Step 1:
     # Next, you will a script that looks for a pair of RSA Public and private key (using a CONSTANT file path; PEM format). 
     # If the files do not exist (use OS package) then generate the RSA public and private key (2048 bits length) 
     # using the same constant file path.
@@ -54,7 +54,7 @@ class RSAEncryption:
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
             )
-            with open(os.path.join(filepath,'public.pem'), 'ab') as pub_write:
+            with open(os.path.join(filepath,'public.pem'), 'wb') as pub_write:
                 pub_write.write(pub_pem)
             
         return private_key, public_key
