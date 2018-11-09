@@ -8,15 +8,15 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/
 
 # Brian Powell @BriianPowell
-# CECS 456 - Machine Learning
+# CECS 378 - Cyber Security
 # Aliasgari
 
 class HMACEncryption:
-    def __init__(self, ENCKEY, HMACKEY):
-        self.ENCKEY = ENCKEY
-        self.HMACKEY = HMACKEY
+    def __init__(self):
+        self.ENCKEY = os.urandom(var.KEYSIZE)
+        self.HMACKEY = os.urandom(var.KEYSIZE)
 
-    # (C, IV, tag)= MyencryptMAC(message, EncKey, HMACKey)
+    # (C, IV, tag)= encryptHMAC(message, EncKey, HMACKey)
     # In this method, you will generate a 16 Bytes IV, and encrypt the message using the key and IV in CBC mode (AES).  
     # You return an error if the len(key) < 32 (i.e., the key has to be 32 bytes= 256 bits).
     def encryptHMAC(self, message, ENCKEY, HMACKEY):
@@ -51,7 +51,7 @@ class HMACEncryption:
 
         return cipher_text, iv, h_tag.finalize()
 
-    # (P) = AESDecrypt(cipher, key, hkey, iv, htag):
+    # (P) = decryptHMAC(cipher, key, hkey, iv, htag):
     # runs the symmetric opposite of encryptHMAC and returns plain_text
     def decryptHMAC(self, CT, ENCKEY, HMACKEY, IV, TAG):
         # Checks to see if cipher and mode are supported
@@ -84,7 +84,7 @@ class HMACEncryption:
     
         return plain_text
 
-    # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
+    # (CT, ekey, hkey, iv, tag, ext) = fileEncryptHMAC(filepath)
     def fileEncryptHMAC(self, filepath):
         # Generate Keys of Size 32
         # enckey = os.urandom(var.KEYSIZE)
@@ -112,7 +112,8 @@ class HMACEncryption:
         encryptFile.close()
     
         return cipher_text, self.ENCKEY, self.HMACKEY, iv, htag, ext
-
+    
+    # (File) = fileDecryptHMAC(cfilepath, ENCKEY, HMACKEY, IV, TAG, EXT)
     def fileDecryptHMAC(self, cfilepath, ENCKEY, HMACKEY, IV, TAG, EXT):
         # Open file in read-binary mode
         # Read binary data to bytedata
@@ -131,16 +132,14 @@ class HMACEncryption:
         decrypt.close()
 
 # [TEST]
-# Generating a key
-key = os.urandom(var.KEYSIZE)
-hkey = os.urandom(var.HMACSIZE)
-
 # Test Message Encryption
-enc = HMACEncryption(key, hkey)
+enc = HMACEncryption()
 message = b"hello brochachos"
 ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
 
 print("Original Message: ", message)
+print("Enc_Key: ", enc.ENCKEY)
+print("Hmc_Key: ", enc.HMACKEY)
 print("Cipher text: ", ct)
 print("Tag: ", ht)
 print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, enc.HMACKEY, iv, ht))
