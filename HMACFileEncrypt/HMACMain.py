@@ -130,20 +130,3 @@ class HMACEncryption:
         decrypt = open(filepath, "wb")
         decrypt.write(plain_text)
         decrypt.close()
-
-# [TEST]
-# Test Message Encryption
-enc = HMACEncryption()
-message = b"hello brochachos"
-ct, iv, ht = enc.encryptHMAC(message, enc.ENCKEY, enc.HMACKEY)
-
-print("Original Message: ", message)
-print("Enc_Key: ", enc.ENCKEY)
-print("Hmc_Key: ", enc.HMACKEY)
-print("Cipher text: ", ct)
-print("Tag: ", ht)
-print("Decrypted Message: ", enc.decryptHMAC(ct, enc.ENCKEY, enc.HMACKEY, iv, ht))
-
-# Test File Encryption
-ct, ek, hk, i_v, htag, ext = enc.fileEncryptHMAC("HMACFileEncrypt\\image.jpg")
-enc.fileDecryptHMAC("HMACFileEncrypt\\image.encrypt", ek, hk, i_v, htag, ext)

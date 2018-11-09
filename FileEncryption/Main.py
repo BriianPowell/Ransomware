@@ -11,8 +11,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 # Aliasgari
 
 class Encryption:
-    def __init__(self, key):
-        self.key = key
+    def __init__(self):
+        self.key = os.urandom(var.KEYSIZE)
 
     # (C, IV) = AESEncrypt(message, key):
     # In this method, you will generate a 16 Bytes IV, and encrypt the message using the key and IV in CBC mode (AES).  
@@ -20,7 +20,7 @@ class Encryption:
     def AESEncrypt(self, message, KEY):
         if(len(KEY) < var.KEYSIZE):
             print("Key is less than 32 bytes.")
-            return
+            return -1
 
         # Checks to see if cipher and mode are supported
         backend = default_backend()
@@ -108,28 +108,9 @@ class Encryption:
         # Get plain_text back from Decryption function
         plain_text = self.AESDecrypt(bytedata, KEY, IV)
 
-        filepath = cfilepath.split(var.ENCEXT)[0] + EXT
+        filepath = cfilepath.split(var.ENCEXT)[0] + "new" + EXT
         # Touch a file called decypted.txt in write-binary mode
         # Write plain_text to the new file
         decrypt = open(filepath, "wb")
         decrypt.write(plain_text)
         decrypt.close()
-
-# [TEST]
-# Generating a key
-# key = os.urandom(var.KEYSIZE)
-
-# # Testing File Encryption
-# enc = Encryption(key)
-# ct, iv, key, ext = enc.AESFileEncrypt("FileEncryption\\test_file.txt")
-# enc.AESFileDecrypt("FileEncryption\\test_file.encrypt", key, iv, ext)
-
-# Test Message
-# message = b"hello brochachos"
-# ct, iv = AESEncrypt(message, key)
-
-# # Print Results
-# print("Original Message: ", message)
-# print("Cipher text: ", ct)
-# print("Decrypted Message: ", AESDecrypt(ct, key, iv))
-
