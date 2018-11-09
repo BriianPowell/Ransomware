@@ -3,7 +3,7 @@ import var
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes, hmac, serialization
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, padding as rsa_padding
 # https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/
 # https://cryptography.io/en/latest/hazmat/primitives/padding/
 # https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/
@@ -23,18 +23,20 @@ class RSAEncryption:
     # Next, you will a script that looks for a pair of RSA Public and private key (using a CONSTANT file path; PEM format). 
     # If the files do not exist (use OS package) then generate the RSA public and private key (2048 bits length) 
     # using the same constant file path.
-    def findRSAkey(self, filepath):
-        if os.path.isfile(filepath):
-            with open(filepath, "rb") as key_file:
+    def findRSAKey(self, filepath):
+        # Check if PEM file exists in directory
+        if os.path.isfile(os.path.join(filepath,'private.pem')):
+            # Get private key from PEM file
+            with open(os.path.join(filepath,'private.pem'), 'rb') as pem_load:
                 private_key = serialization.load_pem_private_key(
-                    key_file.read(),
+                    pem_load.read(),
                     password=None,
                     backend=default_backend()
                 )
+                # Retreive public key from private key
                 public_key = private_key.public_key()
+        # If PEM file doesn't exist we must create keys and store them 
         else:
-            keysFile = open(filepath, "w+")
-
             private_key = rsa.generate_private_key(
                 public_exponent=65537,
                 key_size=2048,
@@ -45,19 +47,18 @@ class RSAEncryption:
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
                 encryption_algorithm=serialization.NoEncryption()
             )
-            pem.splitlines()[0]
-            keysFile.write(pem.decode("utf-8"))
-            
+            with open(os.path.join(filepath,'private.pem'), 'wb') as priv_write:
+                    priv_write.write(pem)
+
             public_key = private_key.public_key()
-            pem = public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
+            pub_pem = public_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
             )
-            pem.splitlines()[0]
-            keysFile.write(pem.decode("utf-8"))
+            with open(os.path.join(filepath,'public.pem'), 'ab') as pub_write:
+                pub_write.write(pub_pem)
             
         return private_key, public_key
-    
 
     # (RSACipher, C, IV, tag, ext)= MyencryptRSA(filepath, RSA_Publickey_filepath)
     # In this method, you first call MyfileEncryptMAC (filepath) which will return (C, IV, tag, Enckey, HMACKey, ext). 
@@ -65,23 +66,44 @@ class RSAEncryption:
     # Lastly, you encrypt the key variable ("key"= EncKey+ HMACKey (concatenated)) using the RSA publickey in OAEP 
     # padding mode. The result will be RSACipher. 
     # You then return (RSACipher, C, IV, ext).
-    # def encryptRSA(self, filepath, RSA_Publickey_filepath):
-    #     # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
-    #     ct, ek, hk, iv, htag, ext = self.fileEncryptHMAC(filepath)
+    def encryptRSA(self, filepath, RSA_Publickey_Filepath):
+        # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
+        ct, ek, hk, iv, htag, ext = self.fileEncryptHMAC(filepath)
 
+        # Initialize RSA Public Key Encryption Object
+        with open(RSA_Publickey_Filepath, 'rb') as pub_read:
+            public_key = serialization.load_pem_public_key(pub_read.read(), backend=default_backend())
 
+        # Encrypt the key variable ("key = EncKey + HMACKey")
+        RSACipher = public_key.encrypt(
+            ek+hk,
+            rsa_padding.OAEP(
+                mgf=rsa_padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None)
+            )
+       
+        return RSACipher, ct, iv, htag, ext
 
-        
-    #     return RSACipher, ct, iv, htag, ext
+    # (P) = decryptRSA(RSACipher, CT, IV, tag, ext, RSA_Privatekey_filepath) 
+    # which does the exactly inverse of the above and generate the decrypted file using your 
+    # previous decryption methods.
+    def decryptRSA(self, cFilepath, RSA_Privatekey_Filepath, RSACipher, CT, IV, TAG, EXT):
+        # Initialize RSA Private Key Encryption Object
+        with open(RSA_Privatekey_Filepath, 'rb') as priv_read:
+            private_key = serialization.load_pem_private_key(priv_read.read(), password=None, backend=default_backend())
 
-    # # (P) = decryptRSA(RSACipher, C, IV, tag, ext, RSA_Privatekey_filepath) 
-    # # which does the exactly inverse of the above and generate the decrypted file using your 
-    # # previous decryption methods.
-    # def decryptRSA(self, CT, ENCKEY, HMACKEY, IV, TAG):
-        
+        # Decrypt the key variable
+        rsadec = private_key.decrypt(RSACipher, 
+            rsa_padding.OAEP(mgf=rsa_padding.MGF1(algorithm=hashes.SHA256()), 
+            algorithm=hashes.SHA256(), 
+            label=None))
 
+        # Parse decrypted RSA key variable for encryption and hmac keys to decrypt file
+        ekey = rsadec[:var.KEYSIZE]
+        hkey = rsadec[var.KEYSIZE:]
 
-    #     return 
+        self.fileDecryptHMAC(cFilepath, ekey, hkey, IV, TAG, EXT)
 
     # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
     def fileEncryptHMAC(self, filepath):
@@ -200,5 +222,15 @@ class RSAEncryption:
 
 # [TEST]
 # Test RSA Files
-enc = HMACEncryption()
-pk, pb = enc.
+publ_path = "RSAFileEncrypt\public.pem" 
+priv_path = "RSAFileEncrypt\private.pem"
+fp = "RSAFileEncrypt\image.jpg"
+cfp = "RSAFileEncrypt\image.encrypt"
+
+enc = RSAEncryption()
+privk,pubk = enc.findRSAKey("RSAFileEncrypt")
+print("Public key:", str(pubk))
+print("Private Key:", str(privk))
+
+rsc, ct, i_v, htag, ext = enc.encryptRSA(fp, publ_path)
+enc.decryptRSA(cfp, priv_path, rsc, ct, i_v, htag, ext)
