@@ -1,4 +1,12 @@
+# Key files
 *.pem
+
+# Executable pyinstaller files
+build/
+dist/
+*.spec
+
+# Byte-compiled / optimized / DLL Files
 *.pyc
 __pycache__/
 .vscode
