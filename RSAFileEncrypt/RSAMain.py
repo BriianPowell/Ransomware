@@ -32,14 +32,14 @@ class RSAEncryption:
                     password=None,
                     backend=default_backend()
                 )
-                # Retreive public key from private key
-                public_key = private_key.public_key()
-                pub_pem = public_key.public_bytes(
-                    encoding=serialization.Encoding.PEM,
-                    format=serialization.PublicFormat.SubjectPublicKeyInfo
-                )
-                with open(os.path.join(filepath,'pub.pem'), 'wb') as pub_write:
-                    pub_write.write(pub_pem)
+            # Retreive public key from private key
+            public_key = private_key.public_key()
+            pub_pem = public_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+            with open(os.path.join(filepath,'pub.pem'), 'wb') as pub_write:
+                pub_write.write(pub_pem)
         # If PEM file doesn't exist we must create keys and store them 
         else:
             private_key = rsa.generate_private_key(
