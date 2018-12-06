@@ -1,9 +1,25 @@
-# Ransomware
+# **Ransomware**
 Ransomware created for CECS 378 at CSULB
 
-Located at: www.onestyle.tech
+Located at: [www.onestyle.tech](www.onestyle.tech)
 
-### Using Windows Subsystem for Linux
+### **Classroom Resources:**
+* [https://blog.cloudboost.io/setting-up-an-https-sever-with-node-amazon-ec2-nginx-and-lets-encrypt-46f869159469](https://blog.cloudboost.io/setting-up-an-https-sever-with-node-amazon-ec2-nginx-and-lets-encrypt-46f869159469)
+* [https://letsencrypt.org/](https://letsencrypt.org/)
+* [https://www.ssllabs.com/ssltest/](https://www.ssllabs.com/ssltest/)
+* [https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/](https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/)
+* [https://cryptography.io/en/latest/hazmat/primitives/padding/](https://cryptography.io/en/latest/hazmat/primitives/padding/)
+* [https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/](https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/)
+* [https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/](https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/)
+* [https://docs.python.org/3/library/os.html](https://docs.python.org/3/library/os.html)
+* [https://docs.python.org/3/library/json.html](https://docs.python.org/3/library/json.html)
+* [http://www.pyinstaller.org/](http://www.pyinstaller.org/)
+* [https://www.codementor.io/olatundegaruba/nodejs-restful-apis-in-10-minutes-q0sgsfhbd](https://www.codementor.io/olatundegaruba/nodejs-restful-apis-in-10-minutes-q0sgsfhbd)
+* [https://www.youtube.com/playlist?list=PL4cUxeGkcC9jBcybHMTIia56aV21o2cZ8&fbclid=IwAR2VYRJia8zwmz7uB92T0wPn9CmwGILH5esQD2ikUaT5RIjp4qI6Kl_N2GQ](https://www.youtube.com/playlist?list=PL4cUxeGkcC9jBcybHMTIia56aV21o2cZ8&fbclid=IwAR2VYRJia8zwmz7uB92T0wPn9CmwGILH5esQD2ikUaT5RIjp4qI6Kl_N2GQ)
+* [https://jwt.io/introduction/](https://jwt.io/introduction/)
+* [https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens](https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens)
+
+### **Using Windows Subsystem for Linux**
 
 * If you don't have bash install from here: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 * Download and install Ubuntu for Windows 10.
