@@ -129,7 +129,7 @@ ExecStartPost=/bin/sleep 0.1
 
 **Congratulations. You have set up Nginx to work with OpenSSL 1.1.1 on Ubuntu 18.04**
 
-*Credit*:
+*Resources*:
 
 * https://www.howtoforge.com/tutorial/how-to-install-openssl-from-source-on-linux/
 * https://bugs.launchpad.net/ubuntu/+source/nginx/+bug/1581864
