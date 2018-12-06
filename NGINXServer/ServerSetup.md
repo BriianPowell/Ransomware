@@ -1,4 +1,5 @@
 ## How to install Nginx, Let's Encrypt, and OpenSSL 1.3 on Ubuntu 18.04
+**Created by: [Sotheanith](https://github.com/sotheanith)**
 
 *In order to avoid any unexpected error, please perform procedures described below only one a freshly installed machine. If you know what you are doing, please disregard this warning.*
 
